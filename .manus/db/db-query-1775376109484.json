@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO storyThemes (name, emoji, description, isCustom) VALUES\n('Mythology & Legends', '🌟', 'Ramayana, Krishna, brave warriors', 0),\n('Animal Adventures', '🐘', 'Elephants, peacocks, jungle tales', 0),\n('Festival Fun', '🎪', 'Diwali, Holi, Eid celebrations', 0),\n('Space & Science', '🚀', 'Rockets, planets, curious minds', 0),\n('Family & Values', '👨‍👩‍👧', 'Dadi-Nani wisdom, sharing, courage', 0),\n('School Stories', '🏫', 'Friendships, competitions, fun', 0);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4DcmCwxKMupZ7Nh.8e2de7b2bf4a --database j3LkF4SuRpGuxL2aJyU2Qx --execute INSERT INTO storyThemes (name, emoji, description, isCustom) VALUES\n('Mythology & Legends', '🌟', 'Ramayana, Krishna, brave warriors', 0),\n('Animal Adventures', '🐘', 'Elephants, peacocks, jungle tales', 0),\n('Festival Fun', '🎪', 'Diwali, Holi, Eid celebrations', 0),\n('Space & Science', '🚀', 'Rockets, planets, curious minds', 0),\n('Family & Values', '👨‍👩‍👧', 'Dadi-Nani wisdom, sharing, courage', 0),\n('School Stories', '🏫', 'Friendships, competitions, fun', 0);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1552
+}

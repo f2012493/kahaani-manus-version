@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, childProfiles, storyThemes, stories, orders } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -87,6 +87,82 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getChildProfiles(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(childProfiles).where(eq(childProfiles.userId, userId));
+}
+
+export async function createChildProfile(userId: number, name: string, age: number, gender?: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(childProfiles).values({ userId, name, age, gender });
+  return result;
+}
+
+export async function getStoryThemes() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(storyThemes);
+}
+
+export async function getUserStories(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(stories).where(eq(stories.userId, userId));
+}
+
+export async function createStory(userId: number, themeId: number, title: string, childProfileId?: number, isGiftStory?: boolean) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(stories).values({
+    userId,
+    themeId,
+    title,
+    childProfileId,
+    isGiftStory: isGiftStory || false,
+    status: 'draft',
+  });
+  return result;
+}
+
+export async function getStoryById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(stories).where(eq(stories.id, id)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateStoryContent(id: number, storyContent: string, storyJson: any, status: 'draft' | 'generated' | 'preview' | 'published') {
+  const db = await getDb();
+  if (!db) return null;
+  return db.update(stories).set({ storyContent, storyJson, status }).where(eq(stories.id, id));
+}
+
+export async function updateStoryIllustrations(id: number, illustrations: any[]) {
+  const db = await getDb();
+  if (!db) return null;
+  return db.update(stories).set({ illustrations, status: 'generated' }).where(eq(stories.id, id));
+}
+
+export async function createOrder(userId: number, storyId: number, orderType: 'digital' | 'printed', price: string) {
+  const db = await getDb();
+  if (!db) return null;
+  return db.insert(orders).values({
+    userId,
+    storyId,
+    orderType,
+    price,
+    status: 'pending',
+  });
+}
+
+export async function getUserOrders(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(orders).where(eq(orders.userId, userId));
 }
 
 // TODO: add feature queries here as your schema grows.
