@@ -177,6 +177,39 @@ export const appRouter = router({
         await updateStoryIllustrations(input.storyId, illustrations);
         return illustrations;
       }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        themeId: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getStoryById, updateStory } = await import("./db");
+        const story = await getStoryById(input.id);
+        if (!story || story.userId !== ctx.user.id) {
+          throw new Error("Story not found");
+        }
+        const updates: any = {};
+        if (input.title !== undefined) updates.title = input.title;
+        if (input.themeId !== undefined) updates.themeId = input.themeId;
+        if (Object.keys(updates).length > 0) {
+          await updateStory(input.id, updates);
+        }
+        return { ...story, ...updates };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { getStoryById, deleteStory } = await import("./db");
+        const story = await getStoryById(input.id);
+        if (!story || story.userId !== ctx.user.id) {
+          throw new Error("Story not found");
+        }
+        await deleteStory(input.id);
+        return { success: true };
+      }),
   }),
 
   order: router({

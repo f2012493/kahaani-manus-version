@@ -165,4 +165,16 @@ export async function getUserOrders(userId: number) {
   return db.select().from(orders).where(eq(orders.userId, userId));
 }
 
+export async function updateStory(id: number, updates: { title?: string; themeId?: number }) {
+  const db = await getDb();
+  if (!db) return null;
+  return db.update(stories).set(updates).where(eq(stories.id, id));
+}
+
+export async function deleteStory(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  return db.delete(stories).where(eq(stories.id, id));
+}
+
 // TODO: add feature queries here as your schema grows.

@@ -192,4 +192,49 @@ describe("story procedures", () => {
       ).rejects.toThrow();
     });
   });
+
+  describe("story.update", () => {
+    it("should update story title", async () => {
+      const ctx = createAuthContext(1);
+      const caller = appRouter.createCaller(ctx);
+
+      const story = await caller.story.create({
+        themeId: 1,
+        title: "Original Title",
+      });
+
+      if (story) {
+        const storyId = (story as any)?.insertId || (story as any)?.[0]?.insertId;
+        if (storyId) {
+          const updated = await caller.story.update({
+            id: storyId,
+            title: "Updated Title",
+          });
+
+          expect(updated).toBeDefined();
+          expect(updated.title).toBe("Updated Title");
+        }
+      }
+    });
+  });
+
+  describe("story.delete", () => {
+    it("should delete story", async () => {
+      const ctx = createAuthContext(1);
+      const caller = appRouter.createCaller(ctx);
+
+      const story = await caller.story.create({
+        themeId: 1,
+        title: "Story to Delete",
+      });
+
+      if (story) {
+        const storyId = (story as any)?.insertId || (story as any)?.[0]?.insertId;
+        if (storyId) {
+          const result = await caller.story.delete({ id: storyId });
+          expect(result.success).toBe(true);
+        }
+      }
+    });
+  });
 });
