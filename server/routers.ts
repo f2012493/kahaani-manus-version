@@ -40,13 +40,38 @@ export const appRouter = router({
         themeId: z.number(),
         title: z.string(),
         childProfileId: z.number().optional(),
+        kidImageUrl: z.string().optional(),
         isGiftStory: z.boolean().optional(),
         giftRecipientName: z.string().optional(),
         giftRecipientAge: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const { createStory } = await import("./db");
-        return createStory(ctx.user.id, input.themeId, input.title, input.childProfileId, input.isGiftStory);
+        return createStory(ctx.user.id, input.themeId, input.title, input.childProfileId, input.isGiftStory, input.kidImageUrl);
+      }),
+
+    uploadKidImage: protectedProcedure
+      .input(z.object({
+        storyId: z.number(),
+        imageBase64: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getStoryById, updateStoryKidImage } = await import("./db");
+        const { storagePut } = await import("./storage");
+
+        const story = await getStoryById(input.storyId);
+        if (!story || story.userId !== ctx.user.id) {
+          throw new Error("Story not found");
+        }
+
+        const buffer = Buffer.from(input.imageBase64, 'base64');
+        const fileKey = `stories/${ctx.user.id}/${input.storyId}/kid-image-${Date.now()}.jpg`;
+        const { url } = await storagePut(fileKey, buffer, 'image/jpeg');
+        
+        // Persist the URL to the database
+        await updateStoryKidImage(input.storyId, url);
+        
+        return { url };
       }),
 
     list: protectedProcedure
@@ -167,8 +192,15 @@ export const appRouter = router({
         for (let i = 0; i < pages.length; i++) {
           const page = pages[i];
           try {
-            const { url } = await generateImage({ prompt: page.imagePrompt });
-            illustrations.push({ pageIndex: i, url, prompt: page.imagePrompt });
+            let imagePrompt = page.imagePrompt;
+            
+            // Include kid's image reference if available
+            if (story.kidImageUrl) {
+              imagePrompt = `${imagePrompt}. Include a photo of the child from this image in the scene: ${story.kidImageUrl}`;
+            }
+            
+            const { url } = await generateImage({ prompt: imagePrompt });
+            illustrations.push({ pageIndex: i, url, prompt: imagePrompt });
           } catch (error) {
             console.error(`Failed to generate image for page ${i}:`, error);
           }

@@ -28,12 +28,31 @@ export default function CreateStory() {
   const [giftRecipientAge, setGiftRecipientAge] = useState("");
   const [giftRecipientAgeError, setGiftRecipientAgeError] = useState("");
 
+  // Image upload
+  const [kidImageUrl, setKidImageUrl] = useState<string | null>(null);
+  const [kidImagePreview, setKidImagePreview] = useState<string | null>(null);
+
   // Theme selection
   const [selectedThemeId, setSelectedThemeId] = useState<number | null>(null);
 
   // API calls
   const { data: themes, isLoading: themesLoading, error: themesError } = trpc.story.themes.useQuery();
   const createStoryMutation = trpc.story.create.useMutation();
+  const uploadKidImageMutation = trpc.story.uploadKidImage.useMutation();
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setKidImagePreview(base64);
+      // Store base64 for later upload
+      setKidImageUrl(base64);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Handle authentication redirect
   useEffect(() => {
@@ -90,19 +109,51 @@ export default function CreateStory() {
     const title = `${isGiftStory ? giftRecipientName : childName}'s Story`;
 
     try {
-      const result = await createStoryMutation.mutateAsync({
-        themeId: selectedThemeId,
-        title,
-        isGiftStory,
-        giftRecipientName: isGiftStory ? giftRecipientName : undefined,
-        giftRecipientAge: isGiftStory ? parseInt(giftRecipientAge) : undefined,
-      });
+      let uploadedImageUrl = kidImageUrl;
+      
+      // Upload kid's image if provided
+      if (kidImageUrl && kidImageUrl.startsWith('data:')) {
+        const base64Data = kidImageUrl.split(',')[1];
+        try {
+          // Create story first, then upload image
+          const tempResult = await createStoryMutation.mutateAsync({
+            themeId: selectedThemeId,
+            title,
+            isGiftStory,
+            giftRecipientName: isGiftStory ? giftRecipientName : undefined,
+            giftRecipientAge: isGiftStory ? parseInt(giftRecipientAge) : undefined,
+          });
 
-      if (result) {
-        const storyId = (result as any)?.insertId || (result as any)?.[0]?.insertId;
-        if (storyId) {
-          toast.success("Story created! Redirecting...");
-          setLocation(`/story/${storyId}`);
+          if (tempResult) {
+            const storyId = (tempResult as any)?.insertId || (tempResult as any)?.[0]?.insertId;
+            if (storyId && base64Data) {
+              const uploadResult = await uploadKidImageMutation.mutateAsync({
+                storyId,
+                imageBase64: base64Data,
+              });
+              uploadedImageUrl = uploadResult.url;
+            }
+          }
+        } catch (uploadError) {
+          console.error("Error uploading image:", uploadError);
+          toast.error("Image upload failed, but story was created");
+        }
+      } else {
+        const result = await createStoryMutation.mutateAsync({
+          themeId: selectedThemeId,
+          title,
+          isGiftStory,
+          giftRecipientName: isGiftStory ? giftRecipientName : undefined,
+          giftRecipientAge: isGiftStory ? parseInt(giftRecipientAge) : undefined,
+          kidImageUrl: uploadedImageUrl || undefined,
+        });
+
+        if (result) {
+          const storyId = (result as any)?.insertId || (result as any)?.[0]?.insertId;
+          if (storyId) {
+            toast.success("Story created! Redirecting...");
+            setLocation(`/story/${storyId}`);
+          }
         }
       }
     } catch (error) {
@@ -245,6 +296,27 @@ export default function CreateStory() {
                         <option value="other">Other</option>
                       </select>
                     </div>
+
+                    <div>
+                      <Label htmlFor="kid-image">Upload Child's Photo (Optional)</Label>
+                      <div className="flex gap-4 items-start">
+                        <div className="flex-1">
+                          <Input
+                            id="kid-image"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="w-full"
+                          />
+                          <p className="text-sm text-gray-500 mt-1">Upload a photo of the child to include in the story illustrations</p>
+                        </div>
+                        {kidImagePreview && (
+                          <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-blue-200">
+                            <img src={kidImagePreview} alt="Kid preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </>
                 )}
               </div>
@@ -352,6 +424,14 @@ export default function CreateStory() {
                   <div>
                     <p className="text-sm text-gray-600">Gift Story</p>
                     <p className="font-semibold text-lg">Yes - For {giftRecipientName}</p>
+                  </div>
+                )}
+                {kidImagePreview && (
+                  <div>
+                    <p className="text-sm text-gray-600">Child's Photo</p>
+                    <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-orange-200 mt-2">
+                      <img src={kidImagePreview} alt="Child" className="w-full h-full object-cover" />
+                    </div>
                   </div>
                 )}
               </div>

@@ -75,3 +75,23 @@
 - [x] Documentation review
 - [x] Platform ready for user testing
 - [ ] User delivery and handoff
+
+## New Features - Kid's Image Upload & Integration
+
+### Phase 5.5: Kid's Image Upload
+- [x] Add image upload field to story creation wizard
+- [x] Store kid's image in S3 storage (via uploadKidImage procedure)
+- [x] Update database schema to store kid image URL (kidImageUrl field added)
+- [x] Add image preview in story creation form
+- [ ] Add image cropping/adjustment UI
+
+### Phase 6.5: Image Integration in Story Illustrations
+- [x] Modify image generation prompt to include kid's image reference
+- [x] Upload kid's image to S3 for use in image generation (with URL persistence to DB)
+- [x] Update illustration generation to include kid's photo in prompts
+- [x] Database schema updated with kidImageUrl fields
+- [x] Backend procedures for image upload and story generation with kid's image
+- [x] Frontend UI for image upload in story creation wizard
+- [x] Image preview in story creation form and review step
+- [x] Backend tests passing (15 tests)
+- [ ] End-to-end testing with actual image generation

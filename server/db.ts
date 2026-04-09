@@ -95,11 +95,17 @@ export async function getChildProfiles(userId: number) {
   return db.select().from(childProfiles).where(eq(childProfiles.userId, userId));
 }
 
-export async function createChildProfile(userId: number, name: string, age: number, gender?: string) {
+export async function createChildProfile(userId: number, name: string, age: number, gender?: string, imageUrl?: string) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(childProfiles).values({ userId, name, age, gender });
+  const result = await db.insert(childProfiles).values({ userId, name, age, gender, imageUrl });
   return result;
+}
+
+export async function updateChildProfileImage(childProfileId: number, imageUrl: string) {
+  const db = await getDb();
+  if (!db) return null;
+  return db.update(childProfiles).set({ imageUrl }).where(eq(childProfiles.id, childProfileId));
 }
 
 export async function getStoryThemes() {
@@ -114,7 +120,7 @@ export async function getUserStories(userId: number) {
   return db.select().from(stories).where(eq(stories.userId, userId));
 }
 
-export async function createStory(userId: number, themeId: number, title: string, childProfileId?: number, isGiftStory?: boolean) {
+export async function createStory(userId: number, themeId: number, title: string, childProfileId?: number, isGiftStory?: boolean, kidImageUrl?: string) {
   const db = await getDb();
   if (!db) return null;
   const result = await db.insert(stories).values({
@@ -122,6 +128,7 @@ export async function createStory(userId: number, themeId: number, title: string
     themeId,
     title,
     childProfileId,
+    kidImageUrl,
     isGiftStory: isGiftStory || false,
     status: 'draft',
   });
@@ -175,6 +182,12 @@ export async function deleteStory(id: number) {
   const db = await getDb();
   if (!db) return null;
   return db.delete(stories).where(eq(stories.id, id));
+}
+
+export async function updateStoryKidImage(storyId: number, kidImageUrl: string) {
+  const db = await getDb();
+  if (!db) return null;
+  return db.update(stories).set({ kidImageUrl }).where(eq(stories.id, storyId));
 }
 
 // TODO: add feature queries here as your schema grows.

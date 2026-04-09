@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "78063a00-31a0-4da1-b7e4-9d8e2e0a2290",
-  "prevId": "791391b5-7ce8-46ed-a55b-26b10f583be8",
+  "id": "6f44b78b-f728-44f8-b87d-b8fe84a2d79b",
+  "prevId": "78063a00-31a0-4da1-b7e4-9d8e2e0a2290",
   "tables": {
     "childProfiles": {
       "name": "childProfiles",
@@ -38,6 +38,13 @@
         "gender": {
           "name": "gender",
           "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "varchar(500)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -282,6 +289,13 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "kidImageUrl": {
+          "name": "kidImageUrl",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "status": {
