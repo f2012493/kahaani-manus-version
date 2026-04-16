@@ -120,7 +120,16 @@ export async function getUserStories(userId: number) {
   return db.select().from(stories).where(eq(stories.userId, userId));
 }
 
-export async function createStory(userId: number, themeId: number, title: string, childProfileId?: number, isGiftStory?: boolean, kidImageUrl?: string) {
+export async function createStory(
+  userId: number,
+  themeId: number,
+  title: string,
+  childProfileId?: number,
+  isGiftStory?: boolean,
+  kidImageUrl?: string,
+  giftRecipientName?: string,
+  giftRecipientAge?: number
+) {
   const db = await getDb();
   if (!db) return null;
   const result = await db.insert(stories).values({
@@ -130,6 +139,8 @@ export async function createStory(userId: number, themeId: number, title: string
     childProfileId,
     kidImageUrl,
     isGiftStory: isGiftStory || false,
+    giftRecipientName,
+    giftRecipientAge,
     status: 'draft',
   });
   return result;
