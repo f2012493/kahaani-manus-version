@@ -106,7 +106,9 @@ export default function CreateStory() {
       return;
     }
 
-    const title = `${isGiftStory ? giftRecipientName : childName}'s Story`;
+    const selectedChildName = isGiftStory ? giftRecipientName : childName;
+    const selectedChildAge = parseInt(isGiftStory ? giftRecipientAge : childAge);
+    const title = `${selectedChildName}'s Story`;
 
     try {
       let uploadedImageUrl = kidImageUrl;
@@ -120,8 +122,8 @@ export default function CreateStory() {
             themeId: selectedThemeId,
             title,
             isGiftStory,
-            giftRecipientName: isGiftStory ? giftRecipientName : undefined,
-            giftRecipientAge: isGiftStory ? parseInt(giftRecipientAge) : undefined,
+            giftRecipientName: selectedChildName,
+            giftRecipientAge: selectedChildAge,
           });
 
           if (tempResult) {
@@ -133,6 +135,8 @@ export default function CreateStory() {
               });
               uploadedImageUrl = uploadResult.url;
             }
+            toast.success("Story created! Redirecting...");
+            setLocation(`/story/${storyId}`);
           }
         } catch (uploadError) {
           console.error("Error uploading image:", uploadError);
@@ -143,8 +147,8 @@ export default function CreateStory() {
           themeId: selectedThemeId,
           title,
           isGiftStory,
-          giftRecipientName: isGiftStory ? giftRecipientName : undefined,
-          giftRecipientAge: isGiftStory ? parseInt(giftRecipientAge) : undefined,
+          giftRecipientName: selectedChildName,
+          giftRecipientAge: selectedChildAge,
           kidImageUrl: uploadedImageUrl || undefined,
         });
 

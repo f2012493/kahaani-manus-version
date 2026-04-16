@@ -47,7 +47,16 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const { createStory } = await import("./db");
-        return createStory(ctx.user.id, input.themeId, input.title, input.childProfileId, input.isGiftStory, input.kidImageUrl);
+        return createStory(
+          ctx.user.id,
+          input.themeId,
+          input.title,
+          input.childProfileId,
+          input.isGiftStory,
+          input.kidImageUrl,
+          input.giftRecipientName,
+          input.giftRecipientAge
+        );
       }),
 
     uploadKidImage: protectedProcedure
