@@ -37,9 +37,9 @@ export default function StoryDetail() {
       toast.loading("Generating your story with AI magic...");
       await generateContentMutation.mutateAsync({
         storyId,
-        childName: story.giftRecipientName || "Child",
-        childAge: story.giftRecipientAge || 5,
-        themeName: "Adventure",
+        childName: (story as any).childName || "Child",
+        childAge: (story as any).childAge || 5,
+        themeName: (story as any).themeName || "Adventure",
       });
       toast.success("Story generated successfully!");
     } catch (error) {

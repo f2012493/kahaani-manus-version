@@ -135,9 +135,23 @@ export const appRouter = router({
           throw new Error("Story not found");
         }
 
-        const prompt = `Create a personalized children's story for ${input.childName}, age ${input.childAge}, with theme: ${input.themeName}. 
-        The story should be 3-4 pages long, engaging, age-appropriate, and feature ${input.childName} as the hero. 
-        Include Indian values and cultural elements. Format as JSON with pages array containing title, content, and imagePrompt for each page.`;
+        const prompt = `Create a highly personalized children's story for a child named ${input.childName}, who is ${input.childAge} years old. 
+        The theme of the story is: ${input.themeName}.
+        
+        Requirements:
+        1. The story must be 3-4 pages long.
+        2. ${input.childName} MUST be the main protagonist and hero of the story.
+        3. Use the name "${input.childName}" frequently in the story content to make it feel truly personal.
+        4. The tone should be engaging, magical, and age-appropriate for a ${input.childAge}-year-old.
+        5. Incorporate Indian values, cultural elements, and perhaps some local flavor.
+        6. For each page, provide a descriptive 'imagePrompt' for an AI image generator. 
+           - The imagePrompt should describe ${input.childName}'s appearance and actions in the scene.
+           - Mention ${input.childName} by name in the imagePrompt to help with consistency.
+        
+        Format the output as a JSON object with a "pages" array. Each page should have:
+        - "title": A catchy title for the page.
+        - "content": The story text for that page.
+        - "imagePrompt": A detailed prompt for generating an illustration for this page.`;
 
         const response = await invokeLLM({
           messages: [
@@ -201,14 +215,15 @@ export const appRouter = router({
         for (let i = 0; i < pages.length; i++) {
           const page = pages[i];
           try {
-            let imagePrompt = page.imagePrompt;
+            const imagePrompt = page.imagePrompt;
+            const originalImages = story.kidImageUrl 
+              ? [{ url: story.kidImageUrl, mimeType: "image/jpeg" }] 
+              : undefined;
             
-            // Include kid's image reference if available
-            if (story.kidImageUrl) {
-              imagePrompt = `${imagePrompt}. Include a photo of the child from this image in the scene: ${story.kidImageUrl}`;
-            }
-            
-            const { url } = await generateImage({ prompt: imagePrompt });
+            const { url } = await generateImage({ 
+              prompt: imagePrompt,
+              originalImages
+            });
             illustrations.push({ pageIndex: i, url, prompt: imagePrompt });
           } catch (error) {
             console.error(`Failed to generate image for page ${i}:`, error);

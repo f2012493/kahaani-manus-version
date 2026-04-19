@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, leftJoin } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, childProfiles, storyThemes, stories, orders } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -149,8 +149,30 @@ export async function createStory(
 export async function getStoryById(id: number) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.select().from(stories).where(eq(stories.id, id)).limit(1);
-  return result.length > 0 ? result[0] : null;
+  
+  const result = await db
+    .select({
+      story: stories,
+      childProfile: childProfiles,
+      theme: storyThemes,
+    })
+    .from(stories)
+    .leftJoin(childProfiles, eq(stories.childProfileId, childProfiles.id))
+    .leftJoin(storyThemes, eq(stories.themeId, storyThemes.id))
+    .where(eq(stories.id, id))
+    .limit(1);
+
+  if (result.length === 0) return null;
+
+  const { story, childProfile, theme } = result[0];
+  return {
+    ...story,
+    childName: story.isGiftStory ? story.giftRecipientName : childProfile?.name,
+    childAge: story.isGiftStory ? story.giftRecipientAge : childProfile?.age,
+    themeName: theme?.name,
+    themeEmoji: theme?.emoji,
+    kidImageUrl: story.kidImageUrl || childProfile?.imageUrl,
+  };
 }
 
 export async function updateStoryContent(id: number, storyContent: string, storyJson: any, status: 'draft' | 'generated' | 'preview' | 'published') {
